@@ -1,99 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Countdown Timer</title>
+  <meta charset="UTF-8">
+  <title>Morphing Countdown Timer</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #0f2027;
-      background: linear-gradient(to right, #2c5364, #203a43, #0f2027);
+      background: radial-gradient(circle at center, #1e3c72, #2a5298);
       color: white;
+      font-family: 'Segoe UI', sans-serif;
+      height: 100vh;
+      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
-      height: 100vh;
-      margin: 0;
     }
 
     .countdown {
       display: flex;
-      gap: 20px;
+      gap: 30px;
     }
 
-    .time-box {
-      background: #1c1c1c;
-      border-radius: 10px;
-      padding: 20px 15px;
+    .time-unit {
       text-align: center;
-      width: 80px;
-      perspective: 1000px;
-    }
-
-    .number {
-      font-size: 2.5rem;
-      font-weight: bold;
-      animation: flip 1s infinite alternate ease-in-out;
     }
 
     .label {
-      margin-top: 5px;
-      font-size: 0.9rem;
-      color: #aaa;
+      margin-top: 10px;
+      font-size: 1rem;
+      color: #ccc;
     }
 
-    @keyframes flip {
-      0% { transform: rotateX(0deg); }
-      100% { transform: rotateX(360deg); }
+    .digit {
+      font-size: 4rem;
+      font-weight: bold;
+      position: relative;
+      height: 70px;
+      width: 80px;
+      overflow: hidden;
+    }
+
+    .digit span {
+      position: absolute;
+      width: 100%;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0;
+      transform: translateY(100%);
+    }
+
+    .digit span.show {
+      opacity: 1;
+      transform: translateY(0%);
+    }
+
+    .digit span.hide {
+      opacity: 0;
+      transform: translateY(-100%);
     }
   </style>
 </head>
 <body>
   <div class="countdown">
-    <div class="time-box">
-      <div class="number" id="days">00</div>
+    <div class="time-unit">
+      <div class="digit" id="days"><span>00</span></div>
       <div class="label">Days</div>
     </div>
-    <div class="time-box">
-      <div class="number" id="hours">00</div>
+    <div class="time-unit">
+      <div class="digit" id="hours"><span>00</span></div>
       <div class="label">Hours</div>
     </div>
-    <div class="time-box">
-      <div class="number" id="minutes">00</div>
+    <div class="time-unit">
+      <div class="digit" id="minutes"><span>00</span></div>
       <div class="label">Minutes</div>
     </div>
-    <div class="time-box">
-      <div class="number" id="seconds">00</div>
+    <div class="time-unit">
+      <div class="digit" id="seconds"><span>00</span></div>
       <div class="label">Seconds</div>
     </div>
   </div>
 
   <script>
-    const targetDate = new Date("June 22, 2025 20:00:00").getTime();
+    const target = new Date("2025-06-22T20:00:00").getTime();
+
+    function updateUnit(id, newVal) {
+      const container = document.getElementById(id);
+      const oldSpan = container.querySelector("span.show");
+      if (oldSpan && oldSpan.textContent === newVal) return;
+
+      const newSpan = document.createElement("span");
+      newSpan.textContent = newVal;
+      newSpan.classList.add("show");
+
+      if (oldSpan) {
+        oldSpan.classList.remove("show");
+        oldSpan.classList.add("hide");
+        setTimeout(() => oldSpan.remove(), 500);
+      }
+
+      container.appendChild(newSpan);
+    }
 
     function updateCountdown() {
       const now = new Date().getTime();
-      const diff = targetDate - now;
+      const diff = target - now;
 
       if (diff <= 0) {
-        document.querySelector('.countdown').innerHTML = "<h2>⏰ Time's up!</h2>";
+        document.body.innerHTML = "<h1 style='color:white'>⏰ Time's up!</h1>";
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+      const days = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
+      const hours = String(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+      const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+      const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
 
-      document.getElementById('days').textContent = String(days).padStart(2, '0');
-      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
-      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
-      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+      updateUnit('days', days);
+      updateUnit('hours', hours);
+      updateUnit('minutes', minutes);
+      updateUnit('seconds', seconds);
     }
 
-    updateCountdown();
     setInterval(updateCountdown, 1000);
+    updateCountdown();
   </script>
 </body>
 </html>
