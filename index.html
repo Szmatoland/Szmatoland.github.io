@@ -1,122 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Morphing Countdown Timer</title>
+  <meta charset="UTF-8" />
+  <title>Morphing Countdown</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <style>
     body {
-      background: radial-gradient(circle at center, #1e3c72, #2a5298);
+      background: #0f2027;
       color: white;
-      font-family: 'Segoe UI', sans-serif;
-      height: 100vh;
-      margin: 0;
       display: flex;
       justify-content: center;
       align-items: center;
+      height: 100vh;
+      margin: 0;
+      font-family: sans-serif;
     }
-
-    .countdown {
+    .timer {
       display: flex;
-      gap: 30px;
+      gap: 20px;
     }
-
-    .time-unit {
-      text-align: center;
+    svg {
+      width: 60px;
+      height: 100px;
     }
-
     .label {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #aaa;
       margin-top: 10px;
-      font-size: 1rem;
-      color: #ccc;
-    }
-
-    .digit {
-      font-size: 4rem;
-      font-weight: bold;
-      position: relative;
-      height: 70px;
-      width: 80px;
-      overflow: hidden;
-    }
-
-    .digit span {
-      position: absolute;
-      width: 100%;
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      opacity: 0;
-      transform: translateY(100%);
-    }
-
-    .digit span.show {
-      opacity: 1;
-      transform: translateY(0%);
-    }
-
-    .digit span.hide {
-      opacity: 0;
-      transform: translateY(-100%);
     }
   </style>
 </head>
 <body>
-  <div class="countdown">
-    <div class="time-unit">
-      <div class="digit" id="days"><span>00</span></div>
+  <div class="timer">
+    <div>
+      <svg viewBox="0 0 100 150"><path id="days" d=""/></svg>
       <div class="label">Days</div>
     </div>
-    <div class="time-unit">
-      <div class="digit" id="hours"><span>00</span></div>
+    <div>
+      <svg viewBox="0 0 100 150"><path id="hours" d=""/></svg>
       <div class="label">Hours</div>
     </div>
-    <div class="time-unit">
-      <div class="digit" id="minutes"><span>00</span></div>
+    <div>
+      <svg viewBox="0 0 100 150"><path id="minutes" d=""/></svg>
       <div class="label">Minutes</div>
     </div>
-    <div class="time-unit">
-      <div class="digit" id="seconds"><span>00</span></div>
+    <div>
+      <svg viewBox="0 0 100 150"><path id="seconds" d=""/></svg>
       <div class="label">Seconds</div>
     </div>
   </div>
 
   <script>
-    const target = new Date("2025-06-22T20:00:00").getTime();
+    // Simple vector paths for digits 0–9
+    const digitPaths = {
+      '0': "M50 10 Q20 30 20 75 Q20 120 50 140 Q80 120 80 75 Q80 30 50 10 Z",
+      '1': "M40 30 L60 30 L60 140 L40 140 Z",
+      '2': "M30 40 Q50 10 70 40 Q70 60 30 90 Q30 110 70 130",
+      '3': "M30 40 Q50 10 70 40 Q50 60 70 80 Q50 100 30 120",
+      '4': "M70 120 L70 30 L30 90 L80 90",
+      '5': "M70 30 H30 V70 Q50 60 70 80 Q50 100 30 120",
+      '6': "M60 30 Q20 60 40 90 Q60 120 80 90 Q60 60 40 80",
+      '7': "M30 30 H80 L50 140",
+      '8': "M50 40 Q30 60 50 80 Q70 60 50 40 M50 80 Q30 100 50 120 Q70 100 50 80",
+      '9': "M40 120 Q80 90 60 60 Q40 30 20 60 Q40 90 60 80",
+    };
 
-    function updateUnit(id, newVal) {
-      const container = document.getElementById(id);
-      const oldSpan = container.querySelector("span.show");
-      if (oldSpan && oldSpan.textContent === newVal) return;
+    const targetDate = new Date("2025-06-22T20:00:00").getTime();
 
-      const newSpan = document.createElement("span");
-      newSpan.textContent = newVal;
-      newSpan.classList.add("show");
+    function morphDigit(id, val) {
+      const path = document.getElementById(id);
+      const current = path.getAttribute("d") || digitPaths['0'];
+      const next = digitPaths[val] || digitPaths['0'];
 
-      if (oldSpan) {
-        oldSpan.classList.remove("show");
-        oldSpan.classList.add("hide");
-        setTimeout(() => oldSpan.remove(), 500);
-      }
-
-      container.appendChild(newSpan);
+      anime({
+        targets: path,
+        d: [{ value: next }],
+        duration: 600,
+        easing: 'easeInOutQuad'
+      });
     }
 
     function updateCountdown() {
       const now = new Date().getTime();
-      const diff = target - now;
+      const diff = targetDate - now;
 
       if (diff <= 0) {
         document.body.innerHTML = "<h1 style='color:white'>⏰ Time's up!</h1>";
         return;
       }
 
-      const days = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
-      const hours = String(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
-      const minutes = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
-      const seconds = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+      const days = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+      const seconds = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
 
-      updateUnit('days', days);
-      updateUnit('hours', hours);
-      updateUnit('minutes', minutes);
-      updateUnit('seconds', seconds);
+      morphDigit("days", days[days.length - 1]);
+      morphDigit("hours", hours[hours.length - 1]);
+      morphDigit("minutes", minutes[minutes.length - 1]);
+      morphDigit("seconds", seconds[seconds.length - 1]);
     }
 
     setInterval(updateCountdown, 1000);
