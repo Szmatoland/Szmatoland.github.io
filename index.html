@@ -2,107 +2,156 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Morphing Countdown</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+  <title>LCD Morphing Countdown</title>
   <style>
     body {
-      background: #0f2027;
-      color: white;
+      background: black;
+      color: lime;
+      font-family: monospace;
       display: flex;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       height: 100vh;
-      margin: 0;
-      font-family: sans-serif;
     }
-    .timer {
+
+    .countdown {
       display: flex;
       gap: 20px;
     }
-    svg {
-      width: 60px;
-      height: 100px;
+
+    .digit {
+      width: 40px;
+      height: 80px;
+      position: relative;
     }
-    .label {
-      text-align: center;
-      font-size: 0.8rem;
-      color: #aaa;
-      margin-top: 10px;
+
+    .segment {
+      position: absolute;
+      background: lime;
+      transition: 0.3s ease;
+      opacity: 0.1;
+    }
+
+    .on {
+      opacity: 1;
+    }
+
+    /* Segment positions (7-segment LCD layout) */
+    .a { top: 0; left: 5px; width: 30px; height: 5px; }
+    .b { top: 5px; right: 0; width: 5px; height: 30px; }
+    .c { bottom: 5px; right: 0; width: 5px; height: 30px; }
+    .d { bottom: 0; left: 5px; width: 30px; height: 5px; }
+    .e { bottom: 5px; left: 0; width: 5px; height: 30px; }
+    .f { top: 5px; left: 0; width: 5px; height: 30px; }
+    .g { top: 37px; left: 5px; width: 30px; height: 5px; }
+
+    .colon {
+      width: 10px;
+      height: 80px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .colon div {
+      width: 6px;
+      height: 6px;
+      background: lime;
+      border-radius: 50%;
+      opacity: 0.8;
     }
   </style>
 </head>
 <body>
-  <div class="timer">
-    <div>
-      <svg viewBox="0 0 100 150"><path id="days" d=""/></svg>
-      <div class="label">Days</div>
-    </div>
-    <div>
-      <svg viewBox="0 0 100 150"><path id="hours" d=""/></svg>
-      <div class="label">Hours</div>
-    </div>
-    <div>
-      <svg viewBox="0 0 100 150"><path id="minutes" d=""/></svg>
-      <div class="label">Minutes</div>
-    </div>
-    <div>
-      <svg viewBox="0 0 100 150"><path id="seconds" d=""/></svg>
-      <div class="label">Seconds</div>
-    </div>
+
+  <div class="countdown" id="timer">
+    <!-- Digits will be injected here -->
   </div>
 
+  <!-- BEEP SOUND -->
+  <audio id="beep" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+
   <script>
-    // Simple vector paths for digits 0–9
-    const digitPaths = {
-      '0': "M50 10 Q20 30 20 75 Q20 120 50 140 Q80 120 80 75 Q80 30 50 10 Z",
-      '1': "M40 30 L60 30 L60 140 L40 140 Z",
-      '2': "M30 40 Q50 10 70 40 Q70 60 30 90 Q30 110 70 130",
-      '3': "M30 40 Q50 10 70 40 Q50 60 70 80 Q50 100 30 120",
-      '4': "M70 120 L70 30 L30 90 L80 90",
-      '5': "M70 30 H30 V70 Q50 60 70 80 Q50 100 30 120",
-      '6': "M60 30 Q20 60 40 90 Q60 120 80 90 Q60 60 40 80",
-      '7': "M30 30 H80 L50 140",
-      '8': "M50 40 Q30 60 50 80 Q70 60 50 40 M50 80 Q30 100 50 120 Q70 100 50 80",
-      '9': "M40 120 Q80 90 60 60 Q40 30 20 60 Q40 90 60 80",
+    const SEGMENTS = {
+      '0': ['a','b','c','d','e','f'],
+      '1': ['b','c'],
+      '2': ['a','b','g','e','d'],
+      '3': ['a','b','g','c','d'],
+      '4': ['f','g','b','c'],
+      '5': ['a','f','g','c','d'],
+      '6': ['a','f','g','c','d','e'],
+      '7': ['a','b','c'],
+      '8': ['a','b','c','d','e','f','g'],
+      '9': ['a','b','c','d','f','g']
     };
+
+    const timerEl = document.getElementById("timer");
+
+    const addDigit = () => {
+      const digit = document.createElement("div");
+      digit.className = "digit";
+      ['a','b','c','d','e','f','g'].forEach(seg => {
+        const s = document.createElement("div");
+        s.className = `segment ${seg}`;
+        digit.appendChild(s);
+      });
+      return digit;
+    };
+
+    const addColon = () => {
+      const colon = document.createElement("div");
+      colon.className = "colon";
+      colon.innerHTML = "<div></div><div></div>";
+      return colon;
+    };
+
+    // Setup: [DD][DD] : [HH][HH] : [MM][MM] : [SS][SS]
+    const digits = [];
+    for (let i = 0; i < 8; i++) {
+      if (i > 0 && i % 2 === 0) timerEl.appendChild(addColon());
+      const d = addDigit();
+      timerEl.appendChild(d);
+      digits.push(d);
+    }
+
+    const beep = document.getElementById("beep");
 
     const targetDate = new Date("2025-06-22T20:00:00").getTime();
 
-    function morphDigit(id, val) {
-      const path = document.getElementById(id);
-      const current = path.getAttribute("d") || digitPaths['0'];
-      const next = digitPaths[val] || digitPaths['0'];
-
-      anime({
-        targets: path,
-        d: [{ value: next }],
-        duration: 600,
-        easing: 'easeInOutQuad'
-      });
+    function updateDisplay(timeStr) {
+      for (let i = 0; i < 8; i++) {
+        const segments = digits[i].querySelectorAll('.segment');
+        const char = timeStr[i];
+        const onSegments = SEGMENTS[char] || [];
+        segments.forEach(seg => {
+          seg.classList.toggle('on', onSegments.includes(seg.classList[1]));
+        });
+      }
     }
 
-    function updateCountdown() {
+    function updateTimer() {
       const now = new Date().getTime();
       const diff = targetDate - now;
 
       if (diff <= 0) {
-        document.body.innerHTML = "<h1 style='color:white'>⏰ Time's up!</h1>";
+        beep.play();
+        updateDisplay("00000000");
+        clearInterval(interval);
         return;
       }
 
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
-      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
-      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
-      const seconds = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
+      const d = Math.floor(diff / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+      const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+      const s = Math.floor((diff % (1000 * 60)) / 1000).toString().padStart(2, '0');
 
-      morphDigit("days", days[days.length - 1]);
-      morphDigit("hours", hours[hours.length - 1]);
-      morphDigit("minutes", minutes[minutes.length - 1]);
-      morphDigit("seconds", seconds[seconds.length - 1]);
+      updateDisplay(d + h + m + s);
     }
 
-    setInterval(updateCountdown, 1000);
-    updateCountdown();
+    const interval = setInterval(updateTimer, 1000);
+    updateTimer();
   </script>
+
 </body>
 </html>
