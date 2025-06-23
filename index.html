@@ -12,11 +12,13 @@
       align-items: center;
       justify-content: center;
       height: 100vh;
+      overflow: hidden;
     }
 
     .countdown {
       display: flex;
       gap: 20px;
+      z-index: 1;
     }
 
     .digit {
@@ -36,7 +38,6 @@
       opacity: 1;
     }
 
-    /* Segment positions (7-segment LCD layout) */
     .a { top: 0; left: 5px; width: 30px; height: 5px; }
     .b { top: 5px; right: 0; width: 5px; height: 30px; }
     .c { bottom: 5px; right: 0; width: 5px; height: 30px; }
@@ -65,12 +66,13 @@
 </head>
 <body>
 
-  <div class="countdown" id="timer">
-    <!-- Digits will be injected here -->
-  </div>
+  <div class="countdown" id="timer"></div>
 
-  <!-- BEEP SOUND -->
-  <audio id="beep" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
+  <!-- CELEBRATION SOUND -->
+  <audio id="yay" src="https://www.soundjay.com/human/yay-01.mp3" preload="auto"></audio>
+
+  <!-- CONFETTI SCRIPT -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <script>
     const SEGMENTS = {
@@ -87,8 +89,9 @@
     };
 
     const timerEl = document.getElementById("timer");
+    const digits = [];
 
-    const addDigit = () => {
+    function addDigit() {
       const digit = document.createElement("div");
       digit.className = "digit";
       ['a','b','c','d','e','f','g'].forEach(seg => {
@@ -97,17 +100,16 @@
         digit.appendChild(s);
       });
       return digit;
-    };
+    }
 
-    const addColon = () => {
+    function addColon() {
       const colon = document.createElement("div");
       colon.className = "colon";
       colon.innerHTML = "<div></div><div></div>";
       return colon;
-    };
+    }
 
-    // Setup: [DD][DD] : [HH][HH] : [MM][MM] : [SS][SS]
-    const digits = [];
+    // Build digit layout
     for (let i = 0; i < 8; i++) {
       if (i > 0 && i % 2 === 0) timerEl.appendChild(addColon());
       const d = addDigit();
@@ -115,9 +117,18 @@
       digits.push(d);
     }
 
-    const beep = document.getElementById("beep");
+    function getTargetTime() {
+      const now = new Date();
+      const target = new Date();
+      target.setHours(11, 53, 0, 0); // 11:53 AM today
+      if (now > target) {
+        target.setDate(target.getDate() + 1); // If passed, set to tomorrow
+      }
+      return target.getTime();
+    }
 
-    const targetDate = new Date("2025-06-22T20:00:00").getTime();
+    const targetDate = getTargetTime();
+    const yay = document.getElementById("yay");
 
     function updateDisplay(timeStr) {
       for (let i = 0; i < 8; i++) {
@@ -130,14 +141,27 @@
       }
     }
 
+    function shootConfetti() {
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 }
+          });
+        }, i * 200);
+      }
+    }
+
     function updateTimer() {
       const now = new Date().getTime();
       const diff = targetDate - now;
 
       if (diff <= 0) {
-        beep.play();
+        yay.play();
+        shootConfetti();
         updateDisplay("00000000");
-        clearInterval(interval);
+        clearInterval(interval); // Stop the timer
         return;
       }
 
