@@ -6,22 +6,20 @@
     <title>Olek PC Controls</title>
   </head>
   <body>
-    <button onclick="sendMessage()">Send</button>
-    <input type="text" id="inputText" name="inputText"></input>
+    <button onclick="gratulacje()">GRATULACJE</button>
   </body>
 
   <script>
-    function sendMessage() {
-      var userInput = document.getElementById('inputText').value;
+    function gratulacje() {
       var request = new XMLHttpRequest();
-      request.open("POST", "https://discord.com/api/webhooks/1404490563025375342/QCVtsxFHC_xTVa747ENh6GaUXw4Po9x2T85gGXjLXh1Y9GRqZ6APRdq1MUr21NOzogCA");
+      request.open("POST", "https://discord.com/api/webhooks/1404495161391845468/WaQmjvB4Q6anzVfYRQ-GTNcP9wYzycGG3PYBxERBEFk1xsU3N0g24t9TZlswlHLD9TC8");
 
       request.setRequestHeader('Content-type', 'application/json');
 
       var params = {
         username: "My Webhook Name",
         avatar_url: "",
-        content: userInput
+        content: "!gratulacje"
       }
 
       request.send(JSON.stringify(params));
