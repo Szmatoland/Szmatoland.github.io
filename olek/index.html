@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Olek PC Controls</title>
+  </head>
+  <body>
+    <button onclick="sendMessage()">Send</button>
+    <input type="text" id="inputText" name="inputText"></input>
+  </body>
+
+  <script>
+    function sendMessage() {
+      var userInput = document.getElementById('inputText').value;
+      var request = new XMLHttpRequest();
+      request.open("POST", "https://discord.com/api/webhooks/1404490563025375342/QCVtsxFHC_xTVa747ENh6GaUXw4Po9x2T85gGXjLXh1Y9GRqZ6APRdq1MUr21NOzogCA");
+
+      request.setRequestHeader('Content-type', 'application/json');
+
+      var params = {
+        username: "My Webhook Name",
+        avatar_url: "",
+        content: userInput
+      }
+
+      request.send(JSON.stringify(params));
+    }
+  </script>
+</html>
