@@ -7,6 +7,7 @@
   </head>
   <body>
     <button onclick="gratulacje()">GRATULACJE</button>
+    <button onclick="yaai()">YOU ARE AN IDIOT</button>
   </body>
 
   <script>
@@ -22,7 +23,25 @@
         content: "!gratulacje"
       }
 
+
       request.send(JSON.stringify(params));
     }
+
+    function yaai() {
+      var request = new XMLHttpRequest();
+      request.open("POST", "https://discord.com/api/webhooks/1404495161391845468/WaQmjvB4Q6anzVfYRQ-GTNcP9wYzycGG3PYBxERBEFk1xsU3N0g24t9TZlswlHLD9TC8");
+
+      request.setRequestHeader('Content-type', 'application/json');
+
+      var params = {
+        username: "My Webhook Name",
+        avatar_url: "",
+        content: "!yaai"
+      }
+
+
+      request.send(JSON.stringify(params));
+    }
+
   </script>
 </html>
