@@ -6,12 +6,95 @@
     <title>Olek PC Controls</title>
   </head>
   <body>
-    <button onclick="gratulacje()">GRATULACJE</button>
-    <button onclick="yaai()">YOU ARE AN IDIOT</button>
-    <input type="text" id="tapetaurl" name="tapetaurl"></input>
-    <button onclick="zmienbg()">ZMIEN TAPETE</button>
+    <button onclick="gratulacje()" class="b1"></button>
+    <button onclick="yaai()" class="b2"></button>
+    <input type="text" id="tapetaurl" class="i1"></input>
+    <button onclick="zmienbg()" class="b3"></button>
   </body>
+  <style>
+    body {
+      background-image: url("bg.jpg");
+      background-repeat: no-repeat;
+      background-size: 100%, 100%
+    }
+    .b1 {
+      font-size: 50px;
+      background: url("gratulacjeb.png");
+      width: 300px;
+      height: 300px;
+      border: none;
+      position: absolute;
+      left: 20%;
+      bottom: 40%;
+    }
 
+    .b1:active {
+      background: url("gratulacjebp.png");
+    }
+
+    .b2 {
+      font-size: 50px;
+      background: url("yaaib.png");
+      width: 300px;
+      height: 300px;
+      border: none;
+      position: absolute;
+      left: 40%;
+      bottom: 40%;
+    }
+
+    .b2:active {
+      background: url("yaaibp.png");
+    }
+
+    .b3 {
+      font-size: 50px;
+      background: url("zmienbgb.png");
+      width: 300px;
+      height: 300px;
+      border: none;
+      position: absolute;
+      left: 60%;
+      bottom: 40%;
+    }
+
+    .b3:active {
+      background: url("zmienbgbp.png");
+    }
+
+    .i1 {
+      width: 280px;
+      padding: 10px 12px;
+      font-size: 16px;
+      color: #222;
+      border: none;
+      border-bottom: 2px solid #bbb;
+      background: #fff;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      outline: none;
+      border-radius: 0;
+      position: absolute;
+      left: 60%;
+      bottom: 65%;
+    }
+
+    .i1::placeholder {
+      color: #999;
+      opacity: 1;
+      transition: color 0.3s ease;
+    }
+
+    .i1:focus {
+      border-bottom-color: #ff0000;  /* bright red */
+      box-shadow: 0 2px 12px rgba(255, 0, 0, 0.7);
+    }
+
+    .i1:focus::placeholder {
+      color: transparent;
+    }
+
+
+  </style>
   <script>
     function gratulacje() {
       var request = new XMLHttpRequest();
