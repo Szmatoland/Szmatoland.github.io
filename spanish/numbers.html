@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Quiz: Liczby po hiszpańsku</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+    .card { background: white; padding: 20px; border-radius: 12px; max-width: 400px; margin: auto; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+    button { margin-top: 10px; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; background: #007BFF; color: white; font-size: 16px; }
+    button:hover { background: #0056b3; }
+    #result { margin-top: 15px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Quiz: liczby po hiszpańsku</h2>
+    <label for="mode">Tryb gry:</label>
+    <select id="mode">
+      <option value="1">Zwykły</option>
+      <option value="2">Pomieszany</option>
+    </select>
+    <button onclick="startQuiz()">Start</button>
+    
+    <div id="quiz" style="display:none;">
+      <p id="question"></p>
+      <input type="text" id="answer" placeholder="Twoja odpowiedź">
+      <button onclick="submitAnswer()">OK</button>
+      <p id="feedback"></p>
+    </div>
+
+    <div id="final" style="display:none;"></div>
+  </div>
+
+  <script>
+    const questions = {
+      "0": "cero",
+      "1": "uno",
+      "2": "dos",
+      "3": "tres",
+      "4": "cuatro",
+      "5": "cinco",
+      "6": "seis",
+      "7": "siete",
+      "8": "ocho",
+      "9": "nueve",
+      "10": "diez",
+      "20": "veinte",
+      "30": "treinta",
+      "40": "cuarenta",
+      "50": "cincuenta",
+      "60": "sesenta",
+      "70": "setenta",
+      "80": "ochenta",
+      "90": "noventa",
+      "100": "cien"
+    };
+
+    let quizOrder = [];
+    let current = 0;
+    let points = 0;
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function startQuiz() {
+      const mode = document.getElementById("mode").value;
+      quizOrder = Object.keys(questions);
+      if (mode === "2") quizOrder = shuffleArray(quizOrder);
+      current = 0;
+      points = 0;
+
+      document.getElementById("quiz").style.display = "block";
+      document.getElementById("final").style.display = "none";
+      document.getElementById("feedback").textContent = "";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      if (current < quizOrder.length) {
+        document.getElementById("question").textContent = quizOrder[current] + ": ";
+        document.getElementById("answer").value = "";
+        document.getElementById("answer").focus();
+      } else {
+        endQuiz();
+      }
+    }
+
+    function submitAnswer() {
+      const userAns = document.getElementById("answer").value.trim().toLowerCase();
+      const correct = questions[quizOrder[current]];
+
+      if (userAns === correct) {
+        points++;
+        document.getElementById("feedback").textContent = "Poprawna odpowiedź!";
+      } else {
+        document.getElementById("feedback").textContent = `Niepoprawna. Poprawna odpowiedź: "${correct}".`;
+      }
+
+      current++;
+      setTimeout(() => {
+        document.getElementById("feedback").textContent = "";
+        showQuestion();
+      }, 1000);
+    }
+
+    function endQuiz() {
+      document.getElementById("quiz").style.display = "none";
+      document.getElementById("final").style.display = "block";
+      document.getElementById("final").innerHTML = `<p>Gratulacje! Zdobyłeś ${points}/${quizOrder.length} punktów.</p>`;
+    }
+  </script>
+</body>
+</html>
