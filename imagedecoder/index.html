@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image to Text Decoder</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      width: 90%;
+      max-width: 600px;
+      text-align: center;
+    }
+    h1 {
+      margin-bottom: 1rem;
+    }
+    input[type="file"] {
+      margin: 1rem 0;
+    }
+    textarea {
+      width: 100%;
+      height: 300px;
+      margin-top: 1rem;
+      padding: 1rem;
+      font-family: monospace;
+      font-size: 14px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      resize: vertical;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    button:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧩 Image to Text Decoder</h1>
+    <p>Upload your encoded image and reveal the hidden text.</p>
+    <input type="file" id="imageInput" accept="image/*">
+    <button id="decodeBtn">Decode Image</button>
+    <textarea id="output" placeholder="Decoded text will appear here..." readonly></textarea>
+  </div>
+
+  <script>
+    const pixeltrade = {
+      "0": "\n", "1": "a", "2": "A", "3": "b", "4": "B", "5": "c", "6": "C", "7": "d", "8": "D",
+      "9": "e", "10": "E", "11": "f", "12": "F", "13": "g", "14": "G", "15": "h", "16": "H",
+      "17": "i", "18": "I", "19": "j", "20": "J", "21": "k", "22": "K", "23": "l", "24": "L",
+      "25": "m", "26": "M", "27": "n", "28": "N", "29": "o", "30": "O", "31": "p", "32": "P",
+      "33": "q", "34": "Q", "35": "r", "36": "R", "37": "s", "38": "S", "39": "t", "40": "T",
+      "41": "u", "42": "U", "43": "v", "44": "V", "45": "w", "46": "W", "47": "x", "48": "X",
+      "49": "y", "50": "Y", "51": "z", "52": "Z", "53": "0", "54": "1", "55": "2", "56": "3",
+      "57": "4", "58": "5", "59": "6", "60": "7", "61": "8", "62": "9", "63": "`", "64": "~",
+      "65": "!", "66": "@", "67": "#", "68": "$", "69": "%", "70": "^", "71": "&", "72": "*",
+      "73": "(", "74": ")", "75": "-", "76": "_", "77": "=", "78": "+", "79": "[", "80": "{",
+      "81": "]", "82": "}", "83": "\\", "84": "|", "85": ";", "86": ":", "87": "'", "88": "<",
+      "89": ">", "90": "?", "91": ",", "92": ".", "93": "/", "94": '"', "95": " ", "255": ""
+    };
+
+    document.getElementById("decodeBtn").addEventListener("click", () => {
+      const fileInput = document.getElementById("imageInput");
+      const output = document.getElementById("output");
+
+      if (!fileInput.files.length) {
+        alert("Please upload an image first!");
+        return;
+      }
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const ctx = canvas.getContext("2d");
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+
+          const imageData = ctx.getImageData(0, 0, img.width, img.height);
+          const data = imageData.data;
+
+          let finalText = "";
+          for (let i = 0; i < data.length; i += 4) {
+            const r = data[i]; // Only use red channel, like original Python script
+            finalText += pixeltrade[r.toString()] || "";
+          }
+
+          output.value = finalText.replace(/\\n/g, "\n");
+        };
+        img.src = event.target.result;
+      };
+
+      reader.readAsDataURL(file);
+    });
+  </script>
+</body>
+</html>
