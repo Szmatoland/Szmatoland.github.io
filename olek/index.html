@@ -3,55 +3,112 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gyroscope Z-Tracker</title>
+    <title>3D Z-Rotation Tracker</title>
     <style>
-        body { font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background: #f0f2f5; }
-        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; }
-        #value { font-size: 4rem; font-weight: bold; color: #007bff; margin: 10px 0; }
-        button { padding: 12px 24px; font-size: 1rem; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
+        body { 
+            font-family: sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0; 
+            background: #121212; 
+            color: white;
+            overflow: hidden;
+        }
+        
+        /* The 3D Container */
+        .scene {
+            width: 200px;
+            height: 200px;
+            perspective: 600px;
+            margin-bottom: 2rem;
+        }
+
+        /* The Visual Card */
+        .card {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #007bff, #00ff88);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            font-weight: bold;
+            box-shadow: 0 0 30px rgba(0, 123, 255, 0.5);
+            /* This is the magic part we will update with JS */
+            transform: rotateZ(0deg);
+            transition: transform 0.1s ease-out;
+            position: relative;
+        }
+
+        /* Direction Marker */
+        .card::after {
+            content: "↑";
+            position: absolute;
+            top: 10px;
+            font-size: 1.5rem;
+        }
+
+        button { 
+            padding: 15px 30px; 
+            font-size: 1.2rem; 
+            cursor: pointer; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h3>Z-Axis Rotation (Alpha)</h3>
-        <div id="value">0°</div>
-        <p id="status">Tap to start tracking</p>
-        <button id="startBtn">Enable Sensors</button>
+    <div class="scene">
+        <div id="visualCard" class="card">0°</div>
     </div>
 
+    <p id="status">Sensors Locked</p>
+    <button id="startBtn">Calibrate & Start</button>
+
     <script>
-        const valueDisplay = document.getElementById('value');
+        const card = document.getElementById('visualCard');
         const statusDisplay = document.getElementById('status');
         const startBtn = document.getElementById('startBtn');
 
-        function handleOrientation(event) {
-            // alpha is the rotation around the z-axis
-            const z = event.alpha; 
+        function updateRotation(event) {
+            // event.alpha is the Z-axis rotation
+            let z = event.alpha; 
+            
             if (z !== null) {
-                valueDisplay.innerText = Math.round(z) + "°";
+                let roundedZ = Math.round(z);
+                // We use negative z because CSS rotation and Compass rotation 
+                // often run in opposite directions
+                card.style.transform = `rotateZ(${-roundedZ}deg)`;
+                card.innerText = roundedZ + "°";
             }
         }
 
         startBtn.addEventListener('click', () => {
-            // Check if we need to request permission (iOS 13+)
             if (typeof DeviceOrientationEvent.requestPermission === 'function') {
                 DeviceOrientationEvent.requestPermission()
-                    .then(permissionState => {
-                        if (permissionState === 'granted') {
-                            window.addEventListener('deviceorientation', handleOrientation);
-                            startBtn.style.display = 'none';
-                            statusDisplay.innerText = "Tracking active";
+                    .then(state => {
+                        if (state === 'granted') {
+                            init();
                         }
-                    })
-                    .catch(console.error);
+                    });
             } else {
-                // For Android or older iOS
-                window.addEventListener('deviceorientation', handleOrientation);
-                startBtn.style.display = 'none';
-                statusDisplay.innerText = "Tracking active";
+                init();
             }
         });
+
+        function init() {
+            window.addEventListener('deviceorientation', updateRotation);
+            startBtn.style.display = 'none';
+            statusDisplay.innerText = "Tracking Z-Rotation...";
+        }
     </script>
 </body>
 </html>
