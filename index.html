@@ -1,1 +1,1 @@
-cmd /c curl -Lo %TEMP%\h.png https://szmatoland.github.io/haha.png && start %TEMP%\h.png
+iwr szmatoland.github.io/haha.png -OutF $env:TEMP\h.png; saps $env:TEMP\h.png
